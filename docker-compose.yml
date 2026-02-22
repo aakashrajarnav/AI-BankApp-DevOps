@@ -19,9 +19,7 @@ services:
       - bankapp-net
 
   bankapp:
-    build:
-      context: .
-      dockerfile: Dockerfile.multistage
+    build: .
     image: bankapp:latest
     container_name: bankapp
     ports:
