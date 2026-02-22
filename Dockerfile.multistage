@@ -1,0 +1,32 @@
+# ===== STAGE 1: BUILDER =====
+# Get a base image for Java
+FROM eclipse-temurin:21-jdk-jammy AS builder
+
+# Set the working directory inside the builder container
+WORKDIR /app
+
+# Copy all project files from the host to the builder container
+COPY . .
+
+# Build the Maven project: clean the target directory, run tests and package using Maven wrapper
+# -DskipTests skips running unit tests during build
+RUN chmod +x mvnw && ./mvnw clean package -DskipTests
+
+# ===== STAGE 2: RUNTIME =====
+# Get a base image for Java
+FROM eclipse-temurin:21-jre-jammy
+
+# Set the working directory inside the runtime container
+WORKDIR /app
+
+# Copy only the compiled JAR file from the builder stage
+# --from=builder: Reference the builder stage
+# /app/target/*.jar: Source path from builder stage
+# app.jar: Renamed JAR file in the runtime container
+COPY --from=builder /app/target/*.jar app.jar
+
+# Expose port 8080 for the Spring Boot application
+EXPOSE 8080
+
+# Define the entry point to run the JAR file when the container starts
+ENTRYPOINT ["java", "-jar", "app.jar"]
