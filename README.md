@@ -178,7 +178,7 @@ The deployment pipeline utilizes OpenID Connect (OIDC) for secure, keyless authe
 
       ![iam permission](screenshots/12.png)
 
-   - Click on `Next`, Enter name of role and `Create Role`.
+   - Click on `Next`, Enter name of role and click on `Create role`.
 
       ![iam role](screenshots/13.png)
 
