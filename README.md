@@ -128,6 +128,7 @@ We use **GitHub OIDC** for passwordless AWS authentication.
     - Audience: `sts.amazonaws.com`
 2.  **IAM Role**: Create a role named `GitHubActionsRole` for **Web Identity**.
 3.  **Trust Policy**: Use this JSON (Replace `<ACCOUNT-ID>`, `<ORG>`, and `<REPO>`):
+
     ```json
     {
       "Version": "2012-10-17",
@@ -149,22 +150,22 @@ We use **GitHub OIDC** for passwordless AWS authentication.
 
 #### 1. AWS Secrets Manager
 Create a secret named `bankapp/prod-secrets` with these EXACT keys:
-- `DB_HOST`: <RDS-Endpoint>
+- `DB_HOST`: `<RDS-Endpoint>`
 - `DB_PORT`: `3306`
 - `DB_NAME`: `bankappdb`
-- `DB_USER`: <Your-RDS-Username>
-- `DB_PASSWORD`: <Your-RDS-Password>
+- `DB_USER`: `<Your-RDS-Username>`
+- `DB_PASSWORD`: `<Your-RDS-Password>`
 - `OLLAMA_URL`: `http://<OLLAMA-PRIVATE-IP>:11434`
 
 #### 2. GitHub Action Secrets
 Add these to your repository settings (Settings -> Secrets -> Actions):
-- `AWS_ROLE_ARN`: <ARN-of-GitHubActionsRole>
-- `AWS_REGION`: <Your-Region>
-- `AWS_ACCOUNT_ID`: <Your-12-digit-ID>
+- `AWS_ROLE_ARN`: `<ARN-of-GitHubActionsRole>`
+- `AWS_REGION`: `<Your-Region>`
+- `AWS_ACCOUNT_ID`: `<Your-12-digit-ID>`
 - `ECR_REPOSITORY`: `devsecops-bankapp`
-- `EC2_HOST`: <App-EC2-Public-IP>
+- `EC2_HOST`: `<App-EC2-Public-IP>`
 - `EC2_USER`: `ubuntu`
-- `EC2_SSH_KEY`: <Your-Private-Key-Content>
+- `EC2_SSH_KEY`: `<Your-Private-Key-Content>`
 
 ---
 
