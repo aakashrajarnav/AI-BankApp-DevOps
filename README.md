@@ -70,7 +70,7 @@ The CI/CD pipeline enforces **7 sequential security gates** before any code reac
 | Gate | Name | Tool | Purpose |
 | :---: | :--- | :--- | :--- |
 | 1 | SAST | Semgrep | Scans Java source code for security flaws and OWASP Top 10 |
-| 2 | SCA | OWASP Dependency Check | Scans Maven dependencies for known CVEs |
+| 2 | SCA | OWASP Dependency Check (first time run can take more than 30+ minutes) | Scans Maven dependencies for known CVEs |
 | 3 | Build | Maven | Compiles and packages the application |
 | 4 | Container Scan | Trivy | Scans the Docker image for OS and library vulnerabilities |
 | 5 | Push | Amazon ECR | Pushes the image only after Trivy passes |
