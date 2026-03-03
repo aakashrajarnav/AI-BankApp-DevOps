@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Docker Image (for scanning)
-        run: docker build -t bankapp:scan-${{ github.sha }} .
+        run: docker build --pull -t bankapp:scan-${{ github.sha }} .
 
       - name: Cache Trivy DB
         uses: actions/cache@v4
@@ -103,5 +103,5 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --pull -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
