@@ -115,9 +115,7 @@ The CI/CD pipeline enforces **7 sequential security gates** before any code reac
 
    - Configure Security Group to open inbound rule for Port 22 (Management) and Port 8080 (Service).
 
-> [!NOTE]
-> 
-> Better to give `name` to Security Group created.
+      > Better to give `name` to Security Group created.
 
    - Create an IAM Instance Profile(IAM EC2 role) containing permissions:
      - `AmazonEC2ContainerRegistryPowerUser`
@@ -152,9 +150,7 @@ The CI/CD pipeline enforces **7 sequential security gates** before any code reac
    - Deploy a dedicated Ubuntu EC2 instance.
    - Open Inbound Port `11434` from the Application EC2 Security Group.
 
-> [!NOTE]
-> 
-> Better to give `name` to Security Group created.
+      > Better to give `name` to Security Group created.
     
       ![ollama-sg](screenshots/8.png)
 
