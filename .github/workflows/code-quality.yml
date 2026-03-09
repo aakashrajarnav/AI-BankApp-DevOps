@@ -4,7 +4,7 @@ name: Code Quality
 
 on:
     push:
-        branches: [main]
+        branches: [start]
 
 jobs:
     validate:
@@ -23,7 +23,7 @@ jobs:
             - name: Install dependencies
               run: mvn clean install -DskipTests
 
-            - name: Run linter
+            - name: Run maven linter
               run: mvn checkstyle:check
 
             - name: Run SAST
