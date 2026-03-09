@@ -27,12 +27,13 @@ jobs:
       - name: Build Project
         run: mvn -B clean package -DskipTests
 
-      - name: Run OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: bankapp
-          path: .
-          format: HTML
+      - name: Run Dependency Check
+        run: |
+          mvn org.owasp:dependency-check-maven:check \
+          -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
+          -DnvdApiDelay=8000 \
+          -DnvdMaxRetryCount=20 \
+          -DfailBuildOnCVSS=7
 
       - name: Upload Dependency Check Report
         if: always()
