@@ -26,6 +26,15 @@ jobs:
           path: ~/.dependency-check
           key: dependency-check-db
 
+      - name: Verify NVD API Key
+        run: |
+          if [ -z "${{ secrets.NVD_API_KEY }}" ]; then
+            echo "NVD API KEY NOT SET"
+            exit 1
+          else
+            echo "NVD API KEY is configured"
+          fi
+
       # Step 1: Download NVD database
       - name: Update NVD Database
         run: |
