@@ -1,0 +1,31 @@
+# Linting and SAST scan
+# lint - checkstyle & SAST - spotbugs
+name: Code Quality
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                distribution: 'temurin'
+                java-version: '21'
+
+            - name: Install dependencies
+              run: mvn clean install -DskipTests
+
+            - name: Run linter
+              run: mvn checkstyle:check
+
+            - name: Run SAST
+              run: mvn spotbugs:check
+

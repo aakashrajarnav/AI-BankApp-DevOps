@@ -18,9 +18,18 @@ services:
     networks:
       - bankapp-net
 
+  ollama:
+    image: ollama/ollama
+    container_name: bankapp-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - bankapp-net
+
   bankapp:
-    build: .
-    image: bankapp:latest
+    image: ${DOCKERHUB_USER}/ai-bankapp:${DOCKER_TAG}
     container_name: bankapp
     ports:
       - "8080:8080"
@@ -37,20 +46,10 @@ services:
     networks:
       - bankapp-net
 
-  ollama:
-    image: ollama/ollama
-    container_name: bankapp-ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - bankapp-net
+volumes:
+  mysql-data:
+  ollama-data:
 
 networks:
   bankapp-net:
     driver: bridge
-
-volumes:
-  mysql-data:
-  ollama-data:
