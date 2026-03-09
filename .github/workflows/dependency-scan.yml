@@ -29,11 +29,6 @@ jobs:
                 key: nvd-db-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
                 restore-keys: nvd-db-${{ runner.os }}-
 
-            - name: Debug API Key
-              env:
-                NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-              run: echo "Key length: ${#NVD_API_KEY}"
-
             # Step 1: Populate the NVD database first
             - name: Update NVD Database
               env:
