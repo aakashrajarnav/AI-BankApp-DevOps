@@ -9,19 +9,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
 
+      - name: Cache Dependency-Check Data
+        uses: actions/cache@v4
+        with:
+          path: ~/.dependency-check
+          key: dependency-check-${{ runner.os }}
+
+      - name: Create data directory
+        run: mkdir -p ~/.dependency-check
+
       - name: Run OWASP Dependency Check
         run: |
           mvn org.owasp:dependency-check-maven:check \
             -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
             -DnvdApiDelay=16000 \
-            -DnvdMaxRetryCount=20
+            -DnvdMaxRetryCount=20 \
+            -DdataDirectory=$HOME/.dependency-check
