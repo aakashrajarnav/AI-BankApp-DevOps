@@ -10,10 +10,9 @@ on:
 jobs:
     dependency-check:
         runs-on: ubuntu-latest
-        env:
-            NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
         steps:
-            - name: Code Checkout 
+            - name: Code Checkout
               uses: actions/checkout@v4
 
             - name: Setup Java
@@ -21,13 +20,37 @@ jobs:
               with:
                 distribution: 'temurin'
                 java-version: '21'
+                cache: maven
 
-            - name: Scan Dependencies with OWASP Dependency-Check
+            - name: Cache NVD Database
+              uses: actions/cache@v4
+              with:
+                path: ~/.m2/repository/org/owasp/dependency-check-data
+                key: nvd-db-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+                restore-keys: nvd-db-${{ runner.os }}-
+
+            # Step 1: Populate the NVD database first
+            - name: Update NVD Database
+              env:
+                NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+              run: |
+                mvn org.owasp:dependency-check-maven:update-only \
+                -DnvdApiKey=$NVD_API_KEY \
+                -DnvdApiDelay=6000 \
+                -DnvdMaxRetryCount=10
+
+            # Step 2: Scan using the now-populated local DB
+            - name: Scan Dependencies
+              env:
+                NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
               run: |
                 mvn org.owasp:dependency-check-maven:check \
-                -DnvdApiKey=${{ secrets.NVD_API_KEY }}
+                -DautoUpdate=false \
+                -DnvdApiKey=$NVD_API_KEY \
+                -DfailBuildOnCVSS=7
 
             - name: Upload Dependency Check Report
+              if: always()
               uses: actions/upload-artifact@v4
               with:
                 name: dependency-check-report
