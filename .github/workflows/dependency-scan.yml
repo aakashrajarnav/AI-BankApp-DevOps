@@ -19,23 +19,31 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Verify Java
+      # Cache vulnerability DB
+      - name: Cache Dependency Check Data
+        uses: actions/cache@v4
+        with:
+          path: ~/.dependency-check
+          key: dependency-check-db
+
+      # Step 1: Download NVD database
+      - name: Update NVD Database
         run: |
-          java -version
-          echo $JAVA_HOME
+          mvn org.owasp:dependency-check-maven:update-only \
+          -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
+          -DnvdApiDelay=10000 \
+          -DnvdMaxRetryCount=20 \
+          -DdataDirectory=$HOME/.dependency-check
 
-      - name: Build Project
-        run: mvn -B clean package -DskipTests
-
+      # Step 2: Run scan using local DB
       - name: Run Dependency Check
         run: |
           mvn org.owasp:dependency-check-maven:check \
-          -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
-          -DnvdApiDelay=8000 \
-          -DnvdMaxRetryCount=20 \
+          -DautoUpdate=false \
+          -DdataDirectory=$HOME/.dependency-check \
           -DfailBuildOnCVSS=7
 
-      - name: Upload Dependency Check Report
+      - name: Upload Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
