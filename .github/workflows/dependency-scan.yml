@@ -28,10 +28,12 @@ jobs:
       - name: Create data directory
         run: mkdir -p ~/.dependency-check
 
-      - name: Run OWASP Dependency Check
+      - name: Run Dependency Check via Docker
         run: |
-          mvn org.owasp:dependency-check-maven:check \
-            -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
-            -DnvdApiDelay=16000 \
-            -DnvdMaxRetryCount=20 \
-            -DdataDirectory=$HOME/.dependency-check
+          docker run --rm \
+          -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
+          -v $(pwd):/src \
+          -v $HOME/.dependency-check:/usr/share/dependency-check/data \
+           owasp/dependency-check \
+           --scan /src \
+           --format HTML
