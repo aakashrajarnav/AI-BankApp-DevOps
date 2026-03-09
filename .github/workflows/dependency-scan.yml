@@ -1,48 +1,34 @@
+# Dependency vulnerability scanning
+# OWASP Dependency-Check for Maven
+
 name: Dependency Scan
 
 on:
-  push:
-    branches: [start]
+    push:
+        branches: [start]
 
 jobs:
-  dependency-check:
-    runs-on: ubuntu-latest
+    dependency-check:
+        runs-on: ubuntu-latest
+        env:
+            NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        steps:
+            - name: Code Checkout 
+              uses: actions/checkout@v4
 
-    steps:
-      - name: Code Checkout
-        uses: actions/checkout@v4
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                distribution: 'temurin'
+                java-version: '21'
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
+            - name: Scan Dependencies with OWASP Dependency-Check
+              run: |
+                mvn org.owasp:dependency-check-maven:check \
+                -DnvdApiKey=${{ secrets.NVD_API_KEY }}
 
-      - name: Cache NVD Database
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: nvd-db-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: nvd-db-${{ runner.os }}-
-
-      - name: Update Dependency Check Database
-        run: |
-          mvn org.owasp:dependency-check-maven:update-only \
-          -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
-          -DnvdApiDelay=8000 \
-          -DnvdMaxRetryCount=10
-
-      - name: Scan Dependencies
-        run: |
-          mvn org.owasp:dependency-check-maven:check \
-          -DautoUpdate=false \
-          -DfailBuildOnCVSS=7 \
-          -DnvdApiKey=${{ secrets.NVD_API_KEY }}
-
-      - name: Upload Dependency Check Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: target/dependency-check-report.html
+            - name: Upload Dependency Check Report
+              uses: actions/upload-artifact@v4
+              with:
+                name: dependency-check-report
+                path: target/dependency-check-report.html
