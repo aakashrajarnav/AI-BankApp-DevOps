@@ -32,7 +32,7 @@ jobs:
             - name: Debug API Key
               env:
                 NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-                run: echo "Key length: ${#NVD_API_KEY}"
+              run: echo "Key length: ${#NVD_API_KEY}"
 
             # Step 1: Populate the NVD database first
             - name: Update NVD Database
