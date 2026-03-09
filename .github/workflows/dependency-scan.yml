@@ -1,18 +1,16 @@
-# Dependency vulnerability scanning
-# OWASP Dependency-Check for Maven
-
 name: Dependency Scan
 
 on:
   push:
     branches: [start]
+  pull_request:
 
 jobs:
-  dependency-check:
+  depcheck-scan:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Code Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -22,39 +20,21 @@ jobs:
           java-version: '21'
           cache: maven
 
-      # Correct cache location
-      - name: Cache NVD Database
-        uses: actions/cache@v4
+      - name: Build Project
+        run: mvn -B clean package -DskipTests
+
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
         with:
-          path: ~/.dependency-check
-          key: nvd-db-${{ runner.os }}
-          restore-keys: nvd-db-
+          project: "bankapp"
+          path: "."
+          format: "HTML"
+          args: >
+            --failOnCVSS 7
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
 
-      # Step 1: Download vulnerability DB
-      - name: Update NVD Database
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: |
-          mvn org.owasp:dependency-check-maven:update-only \
-          -DnvdApiKey=$NVD_API_KEY \
-          -DnvdApiDelay=8000 \
-          -DnvdMaxRetryCount=20 \
-          -DdataDirectory=$HOME/.dependency-check
-
-      # Step 2: Scan dependencies
-      - name: Scan Dependencies
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: |
-          mvn org.owasp:dependency-check-maven:check \
-          -DautoUpdate=false \
-          -DnvdApiKey=$NVD_API_KEY \
-          -DdataDirectory=$HOME/.dependency-check \
-          -DfailBuildOnCVSS=7
-
-      - name: Upload Dependency Check Report
-        if: always()
+      - name: Upload Dependency Report
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
-          path: target/dependency-check-report.html
+          path: reports
