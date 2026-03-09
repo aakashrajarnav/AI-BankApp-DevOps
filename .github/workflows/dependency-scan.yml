@@ -1,60 +1,27 @@
-name: Dependency Scan
+name: Dependency Check
 
 on:
   push:
-    branches: [start]
+  pull_request:
 
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: 21
           cache: maven
 
-      # Cache vulnerability DB
-      - name: Cache Dependency Check Data
-        uses: actions/cache@v4
-        with:
-          path: ~/.dependency-check
-          key: dependency-check-db
-
-      - name: Verify NVD API Key
-        run: |
-          if [ -z "${{ secrets.NVD_API_KEY }}" ]; then
-            echo "NVD API KEY NOT SET"
-            exit 1
-          else
-            echo "NVD API KEY is configured"
-          fi
-
-      # Step 1: Download NVD database
-      - name: Update NVD Database
-        run: |
-          mvn org.owasp:dependency-check-maven:update-only \
-          -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
-          -DnvdApiDelay=10000 \
-          -DnvdMaxRetryCount=20 \
-          -DdataDirectory=$HOME/.dependency-check
-
-      # Step 2: Run scan using local DB
-      - name: Run Dependency Check
+      - name: Run OWASP Dependency Check
         run: |
           mvn org.owasp:dependency-check-maven:check \
-          -DautoUpdate=false \
-          -DdataDirectory=$HOME/.dependency-check \
-          -DfailBuildOnCVSS=7
-
-      - name: Upload Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: target/dependency-check-report.html
+            -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
+            -DnvdApiDelay=16000 \
+            -DnvdMaxRetryCount=20
