@@ -27,13 +27,16 @@ jobs:
       - name: Build Project
         run: mvn -B clean package -DskipTests
 
-      - name: Run Dependency Check
+      - name: Run OWASP Dependency Check
         run: |
           mvn org.owasp:dependency-check-maven:check \
           -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
+          -DnvdApiDelay=8000 \
+          -DnvdMaxRetryCount=20 \
           -DfailBuildOnCVSS=7
 
-      - name: Upload Report
+      - name: Upload Dependency Check Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
