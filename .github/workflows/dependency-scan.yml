@@ -22,11 +22,6 @@ jobs:
                 distribution: 'temurin'
                 java-version: '21'
 
-            - name: Setup Maven
-              uses: s4u/setup-maven-action@v1
-              with:
-                maven-version: '3.9.6'
-
             - name: Scan Dependencies with OWASP Dependency-Check
               run: |
                 mvn org.owasp:dependency-check-maven:check \
