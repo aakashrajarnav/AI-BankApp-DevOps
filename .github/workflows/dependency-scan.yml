@@ -24,6 +24,8 @@ jobs:
         with:
           path: ~/.dependency-check
           key: dependency-check-${{ runner.os }}
+          restore-keys: |
+            dependency-check-
 
       - name: Create data directory
         run: mkdir -p ~/.dependency-check
@@ -34,6 +36,8 @@ jobs:
           -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
           -v $(pwd):/src \
           -v $HOME/.dependency-check:/usr/share/dependency-check/data \
-           owasp/dependency-check \
-           --scan /src \
-           --format HTML
+          owasp/dependency-check:latest \
+          --scan /src \
+          --format HTML \
+          --nvdApiKey $NVD_API_KEY \
+          --out /src/dependency-check-report
