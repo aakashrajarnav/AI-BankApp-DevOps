@@ -1,0 +1,32 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mysql-pv
+  labels:
+    app: mysql
+
+spec:
+  storageClassName: manual # auto eks cluster, currently storage is limited in kind cluster ie 30GB
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/mysql-new
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: ollama-pv
+  labels:
+    app: ollama
+
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/ollama
