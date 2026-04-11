@@ -9,8 +9,6 @@ spec:
     repoURL: https://github.com/TrainWithShubham/AI-BankApp-DevOps.git
     targetRevision: feat/gitops
     path: k8s
-    directory:
-      exclude: '{pod.yml,dashboard-admin.yml}'
   destination:
     server: https://kubernetes.default.svc
     namespace: bankapp
