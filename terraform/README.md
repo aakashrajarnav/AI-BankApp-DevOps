@@ -120,7 +120,33 @@ kubectl get gatewayclass
 
 On EKS, Envoy Gateway automatically provisions an AWS NLB when a Gateway resource is created.
 
-## 5. Install kube-prometheus-stack
+## 5. Install cert-manager (HTTPS/TLS)
+
+```bash
+helm install cert-manager oci://quay.io/jetstack/charts/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true \
+  --set config.enableGatewayAPI=true \
+  --wait
+```
+
+cert-manager integrates with Gateway API to auto-provision Let's Encrypt TLS certificates.
+The `ClusterIssuer` and HTTPS listener are defined in `k8s/cert-manager.yml` and `k8s/gateway.yml` — ArgoCD syncs them automatically.
+
+**DNS setup (GoDaddy):** Create a CNAME record:
+- `bankapp.trainwithshubham.com` → `<NLB hostname from Gateway>`
+
+```bash
+# Verify cert-manager
+kubectl get pods -n cert-manager
+
+# Check certificate (after ArgoCD syncs and DNS propagates)
+kubectl get certificate -n bankapp
+kubectl describe certificate -n bankapp
+```
+
+## 6. Install kube-prometheus-stack
 
 ```bash
 # Add Helm repo
@@ -153,7 +179,7 @@ kubectl port-forward svc/kube-prometheus-kube-prome-prometheus 9090:9090 -n moni
 # Open http://localhost:9090
 ```
 
-## 6. Deploy Application via ArgoCD
+## 7. Deploy Application via ArgoCD
 
 ### Option A: CLI
 
@@ -191,7 +217,7 @@ ArgoCD deploys everything from `k8s/`:
 | `gateway.yml` | Gateway API → external access via NLB |
 | `hpa.yml` | Auto-scale BankApp 2-4 replicas |
 
-## 7. Verify Deployment
+## 8. Verify Deployment
 
 ```bash
 # Pods
@@ -210,7 +236,7 @@ export APP_URL=$(kubectl get svc -n envoy-gateway-system \
 echo "BankApp: http://$APP_URL"
 ```
 
-## 8. CI/CD Pipeline (GitOps Flow)
+## 9. CI/CD Pipeline (GitOps Flow)
 
 ```
 Code Push → GitHub Actions → Build & Push to DockerHub → Update k8s manifest → ArgoCD auto-sync → EKS
@@ -235,7 +261,7 @@ Set in repo → Settings → Secrets → Actions:
 | `DOCKERHUB_USERNAME` | DockerHub username |
 | `DOCKERHUB_TOKEN` | DockerHub access token |
 
-## 9. ArgoCD Add-ons
+## 10. ArgoCD Add-ons
 
 | Add-on | Purpose | Install |
 |--------|---------|---------|
@@ -244,7 +270,7 @@ Set in repo → Settings → Secrets → Actions:
 | **Rollouts** | Blue/Green and Canary deployments | `kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml` |
 | **ApplicationSets** | Template-driven multi-cluster apps | Built into ArgoCD 2.x |
 
-## 10. Cleanup
+## 11. Cleanup
 
 ```bash
 # Delete ArgoCD app first (removes k8s resources)

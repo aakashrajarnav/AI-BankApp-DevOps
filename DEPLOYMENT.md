@@ -71,7 +71,32 @@ kubectl rollout restart deployment envoy-gateway -n envoy-gateway-system
 kubectl get gatewayclass
 ```
 
-## Step 5: Install kube-prometheus-stack
+## Step 5: Install cert-manager (TLS/HTTPS)
+
+```bash
+helm install cert-manager oci://quay.io/jetstack/charts/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true \
+  --set config.enableGatewayAPI=true \
+  --wait
+
+# Verify
+kubectl get pods -n cert-manager
+```
+
+After ArgoCD syncs the ClusterIssuer and updated Gateway (with HTTPS listener), cert-manager automatically provisions a Let's Encrypt TLS certificate.
+
+**Prerequisite:** Create a CNAME in GoDaddy:
+- `bankapp.trainwithshubham.com` → `<NLB hostname from Step 4>`
+
+```bash
+# Check certificate status
+kubectl get certificate -n bankapp
+kubectl get secret bankapp-tls -n bankapp
+```
+
+## Step 6: Install kube-prometheus-stack
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -94,7 +119,7 @@ kubectl get secret kube-prometheus-grafana -n monitoring \
 # Login: admin / <password>
 ```
 
-## Step 6: Build & Push Docker Image
+## Step 7: Build & Push Docker Image
 
 > CI does this automatically on push to `feat/gitops`. This step is only needed for the **first deploy** (image doesn't exist on DockerHub yet).
 
@@ -108,7 +133,7 @@ docker buildx build --platform linux/amd64 \
   --push .
 ```
 
-## Step 7: Deploy via ArgoCD
+## Step 8: Deploy via ArgoCD
 
 ```bash
 kubectl apply -f argocd/application.yml
@@ -117,7 +142,7 @@ kubectl apply -f argocd/application.yml
 kubectl get application bankapp -n argocd -w
 ```
 
-## Step 8: Verify Everything
+## Step 9: Verify Everything
 
 ```bash
 # All pods should be Running
@@ -141,7 +166,7 @@ curl -s -o /dev/null -w "%{http_code}" http://<APP_URL>/
 curl -s -o /dev/null -w "%{http_code}" -L http://<APP_URL>/login
 ```
 
-## Step 9: Pull Ollama Model
+## Step 10: Pull Ollama Model
 
 ```bash
 # Ollama starts empty — pull the AI model

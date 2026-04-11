@@ -13,12 +13,32 @@ kind: Gateway
 metadata:
   name: bankapp-gateway
   namespace: bankapp
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   gatewayClassName: envoy-gateway
   listeners:
+    # HTTP — needed for cert-manager ACME HTTP-01 challenge validation.
+    # cert-manager creates a temporary HTTPRoute in its own namespace to serve
+    # the challenge, so allowedRoutes must permit all namespaces.
     - name: http
       protocol: HTTP
       port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    # HTTPS — TLS terminated at Envoy Gateway using cert-manager certificate
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: bankapp.trainwithshubham.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: bankapp-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -26,10 +46,17 @@ metadata:
   name: bankapp-route
   namespace: bankapp
 spec:
+  hostnames:
+    - bankapp.trainwithshubham.com
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: bankapp-gateway
+      sectionName: https
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: bankapp-gateway
+      sectionName: http
   rules:
     - matches:
         - path:
