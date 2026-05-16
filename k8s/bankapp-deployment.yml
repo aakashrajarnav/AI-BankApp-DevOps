@@ -56,7 +56,7 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 60  #increase initial seconds
             periodSeconds: 10
             failureThreshold: 15
           livenessProbe:
